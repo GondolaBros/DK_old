@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
@@ -15,7 +13,17 @@ public class Arrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log(collision.name);
-        Destroy(gameObject);
+        if (collision != null)
+        {
+            Turret turret = collision.GetComponent<Turret>();
+            if (turret != null)
+            {
+                if (turret.EntityType == EntityType.Turret)
+                {
+                    turret.TakeDamage(new Damage(DamageType.Physical, 5));
+                    Destroy(gameObject);
+                }
+            }
+        }
     }
 }

@@ -251,11 +251,11 @@ EdgeCollider2D:
   m_Points:
   - {x: -3.3700836, y: -6.0094986}
   - {x: -3.3913944, y: -5.7667656}
-  - {x: -3.5560594, y: -3.741159}
+  - {x: -3.5969203, y: -3.880995}
   - {x: -5.0902066, y: -3.4460645}
   - {x: -5.0719767, y: -2.3925266}
   - {x: -5.375481, y: -2.1570766}
-  - {x: -5.0848, y: -2.3038526}
+  - {x: -5.0848, y: -2.9874969}
   - {x: -5.9425683, y: -1.9035827}
   - {x: -6.6900463, y: -1.3873044}
   - {x: -6.632432, y: 1.8525932}
@@ -386,6 +386,7 @@ GameObject:
   - component: {fileID: 590578480}
   - component: {fileID: 590578479}
   - component: {fileID: 590578481}
+  - component: {fileID: 590578482}
   m_Layer: 0
   m_Name: MiddleTurret
   m_TagString: Untagged
@@ -473,6 +474,24 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: -0.12}
   m_Size: {x: 1.8, y: 4.2}
   m_Direction: 0
+--- !u!114 &590578482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590578478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02180178fea12a04a9322b3654ea6b52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentHealth: 0
+  MaxHealth: 0
+  PhysicalDamage: 0
+  MagicalDefense: 0
+  PhysicalDefense: 0
+  EntityType: 0
 --- !u!1 &1176444826
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,6 +609,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 450218e019b4b1a4a9b3b835eb1e84e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ArrowSpeed: 20
   FirePoint: {fileID: 244960017}
   ArrowPrefab: {fileID: 7631720878369557381, guid: 7ed464f9f54bf4a489a4afd2dd132ff0,
     type: 3}

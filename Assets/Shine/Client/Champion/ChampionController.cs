@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-
 public class ChampionController : MonoBehaviour
 {
     private Animator anim;
@@ -55,8 +54,17 @@ public class ChampionController : MonoBehaviour
     {
         Shooting = true;
         anim.SetBool("RunNShoot", Shooting);
+        
+        /*
+        Vector3 target = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Screen.height - Input.mousePosition.y, transform.position.z));
+        Vector3 direction = target - FirePoint.transform.position;
+        direction.Normalize();
+        
+        GameObject arrow = Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
+        arrow.GetComponent<Arrow>().physics.velocity = direction * arrow.GetComponent<Arrow>().Speed;*/
 
         Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
+
         yield return new WaitForSeconds(cooldown);
 
         Shooting = false;

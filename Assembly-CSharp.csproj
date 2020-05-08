@@ -95,8 +95,9 @@
     <Compile Include="Assets\Shine\Client\Champion\CameraController.cs" />
     <Compile Include="Assets\Shine\Client\Champion\ChampionController.cs" />
     <Compile Include="Assets\Shine\Client\Damage.cs" />
-    <Compile Include="Assets\Shine\Client\Entity.cs" />
+    <Compile Include="Assets\Shine\Client\IEntity.cs" />
     <Compile Include="Assets\Shine\Client\Interfaces\IDamageable.cs" />
+    <Compile Include="Assets\Shine\Client\Turret.cs" />
     <Compile Include="Assets\Shine\Network\NetworkManager.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.12f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
