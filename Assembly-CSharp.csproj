@@ -91,7 +91,7 @@
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NetSerializer.cs" />
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NtpPacket.cs" />
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NtpRequest.cs" />
-    <Compile Include="Assets\Shine\Client\Champion\Arrow.cs" />
+    <Compile Include="Assets\Shine\Client\Arrow.cs" />
     <Compile Include="Assets\Shine\Client\Champion\CameraController.cs" />
     <Compile Include="Assets\Shine\Client\Champion\ChampionController.cs" />
     <Compile Include="Assets\Shine\Client\Damage.cs" />
