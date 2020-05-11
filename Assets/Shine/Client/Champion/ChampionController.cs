@@ -27,7 +27,7 @@ public class ChampionController : MonoBehaviour
             Moving = true;
         if (velocity.magnitude < 0.1f && Moving)
             Moving = false;
-
+        
         if (velocity.x < 0 && !flipped)
         {
             flipped = true;
@@ -44,7 +44,7 @@ public class ChampionController : MonoBehaviour
         // If we click the left mouse button to shoot, we're moving, and we aren't already shooting,
         // then start the couroutine to shoot; we want this because we need a flag that determines when a user is shooting, and we dont
         // want them to spam it!
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
+        if ((Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
         {
             StartCoroutine(Shoot(0.5f));
         }

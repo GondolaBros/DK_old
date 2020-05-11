@@ -145,3 +145,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Speed: 20
   physics: {fileID: 7631720878369557378}
+  TimeLeft: 0.75

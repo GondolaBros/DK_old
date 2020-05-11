@@ -3,7 +3,7 @@
 public class Damage
 {
     public DamageType Type { get; private set; }
-    public int Amount { get; private set; }
+    public float Amount { get; private set; }
 
     public Damage(DamageType type, int amount)
     {
