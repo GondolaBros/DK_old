@@ -22,9 +22,14 @@ public class Turret : MonoBehaviour, IDamageable
     {
         if (damage.Type == DamageType.Physical)
         {
-            float damageToApply = Mathf.RoundToInt(damage.Amount * (100 / (100 + PhysicalDefense)));
-            CurrentHealth -= damageToApply;
-            Debug.Log("Turret HP: " + CurrentHealth + "/" + MaxHealth);
+            float damageToApply = damage.Amount * (100 / (100 + PhysicalDefense));
+            Debug.Log("Damage to apply before rounding: " + damageToApply);
+
+            float round = Mathf.Round(damageToApply);
+            Debug.Log("Round operation: " + round);
+
+            //CurrentHealth -= damageToApply;
+            //Debug.Log("Turret HP: " + CurrentHealth + "/" + MaxHealth);
         }
     }
 }

@@ -44,7 +44,7 @@ public class ChampionController : MonoBehaviour
         // If we click the left mouse button to shoot, we're moving, and we aren't already shooting,
         // then start the couroutine to shoot; we want this because we need a flag that determines when a user is shooting, and we dont
         // want them to spam it!
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Alpha1)) && Moving && !Shooting)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
         {
             StartCoroutine(Shoot(0.5f));
         }
@@ -53,22 +53,14 @@ public class ChampionController : MonoBehaviour
     private IEnumerator Shoot(float cooldown)
     {
         Shooting = true;
-        anim.SetBool("RunNShoot", Shooting);
-        
-        /*
-        Vector3 target = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Screen.height - Input.mousePosition.y, transform.position.z));
-        Vector3 direction = target - FirePoint.transform.position;
-        direction.Normalize();
-        
-        GameObject arrow = Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
-        arrow.GetComponent<Arrow>().physics.velocity = direction * arrow.GetComponent<Arrow>().Speed;*/
+        anim.SetBool("Shooting", Shooting);
 
         Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
 
         yield return new WaitForSeconds(cooldown);
 
         Shooting = false;
-        anim.SetBool("RunNShoot", Shooting);
+        anim.SetBool("Shooting", Shooting);
     }
 
     private void FixedUpdate()

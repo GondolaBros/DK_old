@@ -231,7 +231,7 @@ Transform:
   m_LocalScale: {x: 1.3434204, y: 1.7664713, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!68 &392579655
 EdgeCollider2D:
@@ -249,21 +249,15 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: -3.3700836, y: -6.0094986}
-  - {x: -3.3913944, y: -5.7667656}
-  - {x: -3.5969203, y: -3.880995}
-  - {x: -5.0902066, y: -3.4460645}
-  - {x: -5.0719767, y: -2.3925266}
-  - {x: -5.375481, y: -2.1570766}
-  - {x: -5.0848, y: -2.9874969}
-  - {x: -5.9425683, y: -1.9035827}
-  - {x: -6.6900463, y: -1.3873044}
-  - {x: -6.632432, y: 1.8525932}
-  - {x: -4.8480506, y: 1.9085528}
-  - {x: -4.739083, y: 2.8702235}
-  - {x: -2.8403559, y: 3.5309627}
-  - {x: -2.788449, y: 3.6002088}
-  - {x: -1.472089, y: 5.2029343}
+  - {x: -2.4849079, y: -6.0276976}
+  - {x: -4.888375, y: -3.4022276}
+  - {x: -4.9201975, y: -2.9203024}
+  - {x: -5.102175, y: -2.5345867}
+  - {x: -6.19472, y: -1.5989327}
+  - {x: -6.607404, y: -0.7139136}
+  - {x: -6.1743803, y: 0.15818235}
+  - {x: -6.688723, y: 1.3607792}
+  - {x: -1.3877944, y: 5.0826836}
 --- !u!1 &590277235
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,7 +338,7 @@ Transform:
   m_LocalScale: {x: 1.3761265, y: 1.8285357, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!68 &590277238
 EdgeCollider2D:
@@ -362,19 +356,12 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: 4.1101136, y: 3.4528997}
-  - {x: 4.6878376, y: 2.9925172}
-  - {x: 5.175112, y: 2.1295552}
-  - {x: 4.654456, y: 1.6056236}
-  - {x: 4.9941854, y: 2.0911481}
-  - {x: 5.368252, y: 2.1694343}
-  - {x: 6.773337, y: 2.0896869}
-  - {x: 6.361734, y: -1.4714386}
-  - {x: 5.449121, y: -1.6339633}
-  - {x: 5.4365997, y: -2.9518087}
-  - {x: 3.7728155, y: -2.88497}
-  - {x: 3.7933066, y: -3.2398117}
-  - {x: 3.9491625, y: -5.632193}
+  - {x: 3.320552, y: -5.8651085}
+  - {x: 5.145598, y: -3.2412353}
+  - {x: 5.6022105, y: -1.711925}
+  - {x: 6.532684, y: 0.5123404}
+  - {x: 6.073626, y: 1.4171146}
+  - {x: 1.7112056, y: 5.770591}
 --- !u!1 &590578478
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,11 +439,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 590578478}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.055194497, y: 5.69, z: -1}
+  m_LocalPosition: {x: -0.055194497, y: 5, z: -1}
   m_LocalScale: {x: 1.376127, y: 1.828536, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!70 &590578481
 CapsuleCollider2D:
@@ -526,7 +513,7 @@ Transform:
   m_Children:
   - {fileID: 244960017}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1176444828
 SpriteRenderer:
@@ -609,7 +596,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 450218e019b4b1a4a9b3b835eb1e84e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ArrowSpeed: 20
   FirePoint: {fileID: 244960017}
   ArrowPrefab: {fileID: 7631720878369557381, guid: 7ed464f9f54bf4a489a4afd2dd132ff0,
     type: 3}
@@ -667,7 +653,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1220800948
 Transform:
   m_ObjectHideFlags: 0
@@ -778,11 +764,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1351483620}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -34.57, y: 0, z: -10}
+  m_LocalPosition: {x: -34, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1351483624
 MonoBehaviour:
@@ -815,7 +801,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1434258256
 Transform:
   m_ObjectHideFlags: 0

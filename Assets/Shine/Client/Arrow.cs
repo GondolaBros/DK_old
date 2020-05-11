@@ -21,9 +21,9 @@ public class Arrow : MonoBehaviour
                 if (turret.EntityType == EntityType.Turret)
                 {
                     turret.TakeDamage(new Damage(DamageType.Physical, 5));
-                    Destroy(gameObject);
                 }
             }
+            Destroy(gameObject);
         }
     }
 }
