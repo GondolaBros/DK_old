@@ -6,13 +6,11 @@ public class Arrow : MonoBehaviour
     public float TimeLeft;
 
     private Rigidbody2D physics;
-    private ParticleSystem lightningEffect;
 
     // Start is called before the first frame update
     void Awake()
     {
         physics = GetComponent<Rigidbody2D>();
-        lightningEffect = GetComponentInChildren<ParticleSystem>();
 
         physics.velocity = transform.right * Speed;
     }
@@ -22,7 +20,6 @@ public class Arrow : MonoBehaviour
         TimeLeft -= Time.deltaTime;
         if (TimeLeft <= 0.0f)
         {
-            lightningEffect.Play();
             Destroy(gameObject, 0.05f);
         }
     }
