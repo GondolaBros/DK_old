@@ -612,7 +612,7 @@ MonoBehaviour:
   FirePoint: {fileID: 244960017}
   ArrowPrefab: {fileID: 1163307017781650947, guid: 7ed464f9f54bf4a489a4afd2dd132ff0,
     type: 3}
-  MovementSpeed: 5.5
+  MovementSpeed: 11
 --- !u!50 &1176444831
 Rigidbody2D:
   serializedVersion: 4
