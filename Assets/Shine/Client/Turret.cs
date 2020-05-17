@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 //Repair kit
 
@@ -24,6 +25,7 @@ public class Turret : MonoBehaviour, IDamageable
     public bool Friendly;
 
     public TurretState TurretState;
+    public TextMeshPro ProgressLabel;
 
     private const int MAX_PERSUASION = 100;
     private float persuasion = 0f;
@@ -36,12 +38,15 @@ public class Turret : MonoBehaviour, IDamageable
         PhysicalDefense = 50;
         EntityType = EntityType.Turret;
 
-        SearchRadius = 10f;
+        ProgressLabel = GetComponentInChildren<TextMeshPro>();
+        ProgressLabel.gameObject.SetActive(false);
+
+        SearchRadius = 7f;
     }
 
     public void TakeDamage(Damage damage)
     {
-        if (damage.Type == DamageType.Physical)
+        if (damage.Type == DamageType.Physical) // TODO: Remove this and pass through damage stats - if the value is 0 it won't do anything anyways
         {
             float damageToApply = damage.Amount * (100 / (100 + PhysicalDefense));
             Debug.Log("Damage to apply before rounding: " + damageToApply);
@@ -74,33 +79,43 @@ public class Turret : MonoBehaviour, IDamageable
                     if(colliders[i].tag == "Player")
                     {
                         playerObjects.Add(colliders[i].gameObject);
+                        ProgressLabel.gameObject.SetActive(true);
                     }
                 }
 
                 if(playerObjects.Count > 1)
                 {
-                    Debug.Log("Contested!");
+                    ProgressLabel.color = Color.gray;
+                    ProgressLabel.text = "Contested!";
                 } 
                 else if(playerObjects.Count > 0)
                 {
                     persuasion += captureInterval * Time.deltaTime;       
-                    Debug.Log("Capture status: " + (int) persuasion);
 
+                    ProgressLabel.color = Color.yellow;
+                    ProgressLabel.text = "Malephar Capturing (" + (int)persuasion + "%)";
+  
                     if(persuasion >= MAX_PERSUASION)
                     {
                         Friendly = true;
                         TurretState = TurretState.Active;
-                        Debug.Log("Turret Captured!");
+                        ProgressLabel.color = Color.blue;
+                        ProgressLabel.text = "Malephar's Turret (100 health)";
                     }
                 }
                 else
                 {
-                    persuasion -= captureInterval * Time.deltaTime;
-                    if(persuasion < 0)
+                    if(persuasion - (captureInterval * Time.deltaTime) > 0)
                     {
+                        persuasion -= captureInterval * Time.deltaTime;
+                        ProgressLabel.color = (persuasion % 2 == 0) ? Color.white : Color.red;
+                        ProgressLabel.text = "Malephar Losing (" + (int)persuasion + "%)";
+                    } 
+                    else if (persuasion > 0)
+                    {
+                        ProgressLabel.gameObject.SetActive(false);
                         persuasion = 0;
                     }
-                    Debug.Log("Capture status: " + (int) persuasion);
                 }
             } break;
 
