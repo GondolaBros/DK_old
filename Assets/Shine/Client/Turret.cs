@@ -6,8 +6,7 @@ using TMPro;
 
 public enum TurretState {
     Idle,
-    Active,
-    Shooting,
+    Captured,
     Broken
 }
 
@@ -18,18 +17,18 @@ public class Turret : MonoBehaviour, IDamageable
     public float PhysicalDamage;
     public float MagicalDefense;
     public float PhysicalDefense;
-    public EntityType EntityType;
-    
-    public Transform CurrentTarget;
-    public float SearchRadius;
-    public bool Friendly;
 
+    public float CaptureInterval;
+    public float SearchRadius;
+
+    public EntityType EntityType;
     public TurretState TurretState;
     public TextMeshPro ProgressLabel;
+    public Transform ShootPosition;
 
+    private GameObject whoCapturedMe;
     private const int MAX_PERSUASION = 100;
     private float persuasion = 0f;
-    private float captureInterval = 10f;
 
     void Awake()
     {
@@ -40,8 +39,6 @@ public class Turret : MonoBehaviour, IDamageable
 
         ProgressLabel = GetComponentInChildren<TextMeshPro>();
         ProgressLabel.gameObject.SetActive(false);
-
-        SearchRadius = 7f;
     }
 
     public void TakeDamage(Damage damage)
@@ -61,7 +58,7 @@ public class Turret : MonoBehaviour, IDamageable
     void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawSphere(this.transform.position, SearchRadius);
+        Gizmos.DrawWireSphere(this.transform.position, SearchRadius);
     }
 
     private void Update()
@@ -74,9 +71,10 @@ public class Turret : MonoBehaviour, IDamageable
                 Collider2D[] colliders = Physics2D.OverlapCircleAll(this.transform.position, SearchRadius /*layerMask (Player)*/);
                 
                 List<GameObject> playerObjects = new List<GameObject>();
+                
                 for(int i = 0; i < colliders.Length; i++)
                 {
-                    if(colliders[i].tag == "Player")
+                    if (colliders[i].tag == "Player" || colliders[i].tag == "Enemy")
                     {
                         playerObjects.Add(colliders[i].gameObject);
                         ProgressLabel.gameObject.SetActive(true);
@@ -90,27 +88,30 @@ public class Turret : MonoBehaviour, IDamageable
                 } 
                 else if(playerObjects.Count > 0)
                 {
-                    persuasion += captureInterval * Time.deltaTime;       
-
+                    persuasion += CaptureInterval * Time.deltaTime;  
                     ProgressLabel.color = Color.yellow;
-                    ProgressLabel.text = "Malephar Capturing (" + (int)persuasion + "%)";
-  
+                    
+                    playerObjects.ForEach(delegate (GameObject obj)
+                    {
+                        ProgressLabel.text = obj.name + " Capturing (" + (int)persuasion + "%)";
+                        whoCapturedMe = obj;
+                    });
+    
                     if(persuasion >= MAX_PERSUASION)
                     {
-                        Friendly = true;
-                        TurretState = TurretState.Active;
-                        ProgressLabel.color = Color.blue;
-                        ProgressLabel.text = "Malephar's Turret (100 health)";
+                        TurretState = TurretState.Captured;
+                        ProgressLabel.color = Color.cyan;
+                        ProgressLabel.text =  whoCapturedMe.name + " Captured (HP:100)";
                     }
                 }
                 else
                 {
-                    if(persuasion - (captureInterval * Time.deltaTime) > 0)
+                    if(persuasion - (CaptureInterval * Time.deltaTime) > 0)
                     {
-                        persuasion -= captureInterval * Time.deltaTime;
+                        persuasion -= CaptureInterval * Time.deltaTime;
                         ProgressLabel.color = (persuasion % 2 == 0) ? Color.white : Color.red;
-                        ProgressLabel.text = "Malephar Losing (" + (int)persuasion + "%)";
-                    } 
+                        ProgressLabel.text = whoCapturedMe.name + " Losing (" + (int)persuasion + "%)";
+                    }
                     else if (persuasion > 0)
                     {
                         ProgressLabel.gameObject.SetActive(false);
@@ -119,18 +120,28 @@ public class Turret : MonoBehaviour, IDamageable
                 }
             } break;
 
-            case TurretState.Active:
+            case TurretState.Captured:
             {
-                Debug.Log("Turret is Friendly?: " + Friendly);
-                //Is there anyone standing in attack radius?
-                //If so, are they friendly?
-                //If not, find a target and run contested check
-            } break;
+                Collider2D[] colliders = Physics2D.OverlapCircleAll(this.transform.position, SearchRadius);
 
-            case TurretState.Shooting:
-            {
-                //Check for new target
-                //Check attack speed timer, attack current target if cooled down
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    // Only shoot if its the other person who captured me
+                    if (colliders[i].name != whoCapturedMe.name)
+                    {
+                        // Unity Vector cookbook shows hwo to truly calculate distance between vectors using a 'heading'
+                        Vector2 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
+                        float distance = heading.magnitude;
+                        Vector2 direction = heading / distance;
+                        
+                        RaycastHit2D rayInfo = Physics2D.Raycast(this.ShootPosition.transform.position, direction, SearchRadius);
+                        if (rayInfo)
+                        {
+                            Debug.Log("Hit: " + rayInfo.transform.name);
+                        }
+                        break;
+                    }
+                }
             } break;
 
             case TurretState.Broken:
@@ -138,7 +149,5 @@ public class Turret : MonoBehaviour, IDamageable
                 //REPAIR KITS
             } break;
         }
-
-        //Debug.Log("Turret State: " + TurretState);
     }
 }
