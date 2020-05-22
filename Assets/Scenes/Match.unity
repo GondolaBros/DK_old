@@ -493,7 +493,7 @@ MonoBehaviour:
   PhysicalDamage: 0
   MagicalDefense: 0
   PhysicalDefense: 0
-  CaptureInterval: 50
+  CaptureInterval: 10
   SearchRadius: 8.25
   EntityType: 0
   TurretState: 0

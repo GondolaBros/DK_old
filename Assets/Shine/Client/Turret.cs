@@ -26,7 +26,7 @@ public class Turret : MonoBehaviour, IDamageable
     public TextMeshPro ProgressLabel;
     public Transform ShootPosition;
 
-    private GameObject whoCapturedMe;
+    private GameObject whosCapturingMe;
     private const int MAX_PERSUASION = 100;
     private float persuasion = 0f;
 
@@ -39,6 +39,8 @@ public class Turret : MonoBehaviour, IDamageable
 
         ProgressLabel = GetComponentInChildren<TextMeshPro>();
         ProgressLabel.gameObject.SetActive(false);
+
+        whosCapturingMe = null;
     }
 
     public void TakeDamage(Damage damage)
@@ -93,15 +95,20 @@ public class Turret : MonoBehaviour, IDamageable
                     
                     playerObjects.ForEach(delegate (GameObject obj)
                     {
+                        if (whosCapturingMe && obj.name != whosCapturingMe.name)
+                        { 
+                            persuasion = 0;
+                        }
+
+                        whosCapturingMe = obj;
                         ProgressLabel.text = obj.name + " Capturing (" + (int)persuasion + "%)";
-                        whoCapturedMe = obj;
                     });
     
                     if(persuasion >= MAX_PERSUASION)
                     {
                         TurretState = TurretState.Captured;
                         ProgressLabel.color = Color.cyan;
-                        ProgressLabel.text =  whoCapturedMe.name + " Captured (HP:100)";
+                        ProgressLabel.text = whosCapturingMe.name + " Captured (HP:100)";
                     }
                 }
                 else
@@ -110,7 +117,7 @@ public class Turret : MonoBehaviour, IDamageable
                     {
                         persuasion -= CaptureInterval * Time.deltaTime;
                         ProgressLabel.color = (persuasion % 2 == 0) ? Color.white : Color.red;
-                        ProgressLabel.text = whoCapturedMe.name + " Losing (" + (int)persuasion + "%)";
+                        ProgressLabel.text = whosCapturingMe.name + " Losing (" + (int)persuasion + "%)";
                     }
                     else if (persuasion > 0)
                     {
@@ -127,7 +134,7 @@ public class Turret : MonoBehaviour, IDamageable
                 for (int i = 0; i < colliders.Length; i++)
                 {
                     // Only shoot if its the other person who captured me
-                    if (colliders[i].name != whoCapturedMe.name)
+                    if (colliders[i].name != whosCapturingMe.name)
                     {
                         // Unity Vector cookbook shows hwo to truly calculate distance between vectors using a 'heading'
                         Vector2 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
