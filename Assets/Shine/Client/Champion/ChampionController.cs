@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class ChampionController : MonoBehaviour
 {
-    private Animator anim;
-    private Vector3 velocity;
-
     private float x, y;
     private bool flipped;
     private bool canMove;
     private bool isIdleShooting;
+
+    private Animator anim;
+    private Vector3 velocity;
 
     public Transform FirePoint;
     public GameObject ArrowPrefab;
@@ -17,11 +17,18 @@ public class ChampionController : MonoBehaviour
     public float MovementSpeed;
     public bool Moving { get; private set; }
     public bool Shooting { get; private set; }
+    public bool IsMine { get; private set; }
 
     // Start is called before the first frame update
     void Awake()
     {
         anim = GetComponent<Animator>();
+
+        // We're setting this to prepare for network behaviour... aswell as identifying bots from player objects
+        if (this.tag == "Player")
+            IsMine = true;
+        else
+            IsMine = false;
     }
 
     private void Update()
@@ -48,36 +55,48 @@ public class ChampionController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (canMove)
+        if (IsMine)
         {
-            x = Input.GetAxis("Horizontal");
-            y = Input.GetAxis("Vertical");
-            velocity = new Vector3(x, y, 0f);
-            transform.position += velocity * Time.deltaTime * MovementSpeed;
-        }
+            if (canMove)
+            {
+                x = Input.GetAxis("Horizontal");
+                y = Input.GetAxis("Vertical");
+                velocity = new Vector3(x, y, 0f);
+                transform.position += velocity * Time.deltaTime * MovementSpeed;
+            }
 
-        if (velocity.x < 0 && !flipped)
-        {
-            flipped = true;
-            transform.Rotate(0f, 180f, 0f);
+            if (velocity.x < 0 && !flipped)
+            {
+                flipped = true;
+                transform.Rotate(0f, 180f, 0f);
+            }
+            if (velocity.x > 0 && flipped)
+            {
+                transform.Rotate(0f, 180f, 0f);
+                flipped = false;
+            }
         }
-        if (velocity.x > 0 && flipped)
+        // for debug purposes lel
+        else
         {
-            transform.Rotate(0f, 180f, 0f);
-            flipped = false;
+            //velocity = new Vector3(Vector2.right.x, Vector2.right.y, 0f);
+            //transform.position += velocity * Time.deltaTime * MovementSpeed;
         }
     }
 
     private IEnumerator Shoot(float cooldown)
     {
-        Shooting = true;
-        anim.SetBool("Shooting", Shooting);
+        if (IsMine)
+        {
+            Shooting = true;
+            anim.SetBool("Shooting", Shooting);
 
-        Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
+            Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
 
-        yield return new WaitForSeconds(cooldown);
+            yield return new WaitForSeconds(cooldown);
 
-        Shooting = false;
-        anim.SetBool("Shooting", Shooting);
+            Shooting = false;
+            anim.SetBool("Shooting", Shooting);
+        }
     }
 }
