@@ -14,10 +14,15 @@ public class ChampionController : MonoBehaviour
     public Transform FirePoint;
     public GameObject ArrowPrefab;
 
-    public float MovementSpeed;
     public bool Moving { get; private set; }
     public bool Shooting { get; private set; }
     public bool IsMine { get; private set; }
+
+    // Maximum turn rate in degrees per second.
+    public float turningRate = 50; 
+    // Rotation we should blend towards.
+    private Quaternion _targetRotation = Quaternion.identity;
+    // Call this when you want to turn the object smoothly.
 
     // Start is called before the first frame update
     void Awake()
@@ -29,59 +34,35 @@ public class ChampionController : MonoBehaviour
             IsMine = true;
         else
             IsMine = false;
+
+            Debug.Log(gameObject.name);
     }
 
     private void Update()
     {
-        anim.SetFloat("Speed", velocity.magnitude);
-
-        if (velocity.magnitude > 1e-05 && !Moving)
-            Moving = true;
-        if (velocity.magnitude < 0.1f && Moving)
-            Moving = false;
-
-        isIdleShooting = !Moving && Shooting;
-
-        if (isIdleShooting)
-            canMove = false;
-        else
-            canMove = true;
-
-        if ((Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
+        if (IsMine)
         {
-            StartCoroutine(Shoot(0.5f));
+
+            y = Input.GetAxis("Vertical");
+            velocity = new Vector3(0, y, 0);
+
+            //Quaternion newRotation = transform.rotation 
+
+            anim.SetFloat("MovementAxis", velocity.magnitude);
+
+            //transform.Rotate(0, x*4, 0);
+
+            if ((Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
+            {
+                //StartCoroutine(Shoot(0.5f));
+            }
         }
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
-        if (IsMine)
-        {
-            if (canMove)
-            {
-                x = Input.GetAxis("Horizontal");
-                y = Input.GetAxis("Vertical");
-                velocity = new Vector3(x, y, 0f);
-                transform.position += velocity * Time.deltaTime * MovementSpeed;
-            }
-
-            if (velocity.x < 0 && !flipped)
-            {
-                flipped = true;
-                transform.Rotate(0f, 180f, 0f);
-            }
-            if (velocity.x > 0 && flipped)
-            {
-                transform.Rotate(0f, 180f, 0f);
-                flipped = false;
-            }
-        }
-        // for debug purposes lel
-        else
-        {
-            //velocity = new Vector3(Vector2.right.x, Vector2.right.y, 0f);
-            //transform.position += velocity * Time.deltaTime * MovementSpeed;
-        }
+        x = Input.GetAxis("Horizontal");
+        transform.rotation *= Quaternion.Euler(Vector3.up * x * 90 * Time.deltaTime);
     }
 
     private IEnumerator Shoot(float cooldown)
