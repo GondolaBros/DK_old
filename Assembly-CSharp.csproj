@@ -91,9 +91,12 @@
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NetSerializer.cs" />
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NtpPacket.cs" />
     <Compile Include="Assets\Lib\LiteNetLib\Utils\NtpRequest.cs" />
+    <Compile Include="Assets\Lib\LiteNetLib\obj\Debug\netcoreapp2.1\LiteNetLib.AssemblyInfo.cs" />
+    <Compile Include="Assets\Shine\Client\AI\AgentModeController.cs" />
     <Compile Include="Assets\Shine\Client\Arrow.cs" />
     <Compile Include="Assets\Shine\Client\Champion\CameraController.cs" />
     <Compile Include="Assets\Shine\Client\Champion\ChampionController.cs" />
+    <Compile Include="Assets\Shine\Client\Controllers\BotController.cs" />
     <Compile Include="Assets\Shine\Client\Damage.cs" />
     <Compile Include="Assets\Shine\Client\IEntity.cs" />
     <Compile Include="Assets\Shine\Client\Interfaces\IDamageable.cs" />
