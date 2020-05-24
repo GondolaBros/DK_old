@@ -41,6 +41,8 @@ public class Turret : MonoBehaviour, IDamageable
         ProgressLabel.gameObject.SetActive(false);
 
         whosCapturingMe = null;
+
+        Debug.Log("Turret");
     }
 
     public void TakeDamage(Damage damage)
@@ -70,7 +72,7 @@ public class Turret : MonoBehaviour, IDamageable
             case TurretState.Idle:
             {
                 //Has anyone stood in the space long enough to activate this turret?
-                Collider2D[] colliders = Physics2D.OverlapCircleAll(this.transform.position, SearchRadius /*layerMask (Player)*/);
+                Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius /*layerMask (Player)*/);
                 
                 List<GameObject> playerObjects = new List<GameObject>();
                 
@@ -129,7 +131,7 @@ public class Turret : MonoBehaviour, IDamageable
 
             case TurretState.Captured:
             {
-                Collider2D[] colliders = Physics2D.OverlapCircleAll(this.transform.position, SearchRadius);
+                Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius);
 
                 for (int i = 0; i < colliders.Length; i++)
                 {
