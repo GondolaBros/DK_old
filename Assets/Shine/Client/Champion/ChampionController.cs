@@ -3,26 +3,12 @@ using UnityEngine;
 
 public class ChampionController : MonoBehaviour
 {
-    private float x, y;
-    private bool flipped;
-    private bool canMove;
-    private bool isIdleShooting;
+    private float rotateVelocity = 200f;
+    private Quaternion targetRotation;
+    private Animator anim = null;
 
-    private Animator anim;
-    private Vector3 velocity;
-
-    public Transform FirePoint;
-    public GameObject ArrowPrefab;
-
-    public bool Moving { get; private set; }
     public bool Shooting { get; private set; }
     public bool IsMine { get; private set; }
-
-    // Maximum turn rate in degrees per second.
-    public float turningRate = 50; 
-    // Rotation we should blend towards.
-    private Quaternion _targetRotation = Quaternion.identity;
-    // Call this when you want to turn the object smoothly.
 
     // Start is called before the first frame update
     void Awake()
@@ -38,32 +24,44 @@ public class ChampionController : MonoBehaviour
             Debug.Log(gameObject.name);
     }
 
-    private void Update()
+    
+
+    void FixedUpdate()
     {
-        if (IsMine)
-        {
+        Vector3 inputVector = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
-            y = Input.GetAxis("Vertical");
-            velocity = new Vector3(0, y, 0);
+        //Set animation state based on input (idle, walking, running, strafing)
+        //SetAnimationState(movementVector);
 
-            //Quaternion newRotation = transform.rotation 
+        //Rotate();
 
-            anim.SetFloat("MovementAxis", velocity.magnitude);
-
-            //transform.Rotate(0, x*4, 0);
-
-            if ((Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Alpha1)) && !Shooting)
-            {
-                //StartCoroutine(Shoot(0.5f));
-            }
-        }
+        anim.SetFloat("MovementX", inputVector.x);
+        anim.SetFloat("MovementZ", inputVector.z);
     }
 
-    private void LateUpdate()
+    
+    void Rotate()
     {
-        x = Input.GetAxis("Horizontal");
-        transform.rotation *= Quaternion.Euler(Vector3.up * x * 90 * Time.deltaTime);
+        //Get rotation input
+        float rotationInput = Input.GetAxis("Horizontal");
+
+        targetRotation = Quaternion.AngleAxis(rotateVelocity * rotationInput * Time.deltaTime, Vector3.up) * targetRotation;
+        transform.rotation = targetRotation;
     }
+
+    
+    void SetAnimationState(Vector3 input)
+    {
+        bool strafing = (input.x != 0.0f);
+        bool running = (input != Vector3.zero && Input.GetKey(KeyCode.LeftShift));
+        bool walking = (input != Vector3.zero && !strafing && !running);
+
+        
+        anim.SetBool("IsWalking", walking);
+        anim.SetBool("IsRunning", running);
+        anim.SetBool("IsStrafing", strafing);
+    }
+        
 
     private IEnumerator Shoot(float cooldown)
     {
@@ -72,7 +70,7 @@ public class ChampionController : MonoBehaviour
             Shooting = true;
             anim.SetBool("Shooting", Shooting);
 
-            Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
+            //Instantiate(ArrowPrefab, FirePoint.position, FirePoint.rotation);
 
             yield return new WaitForSeconds(cooldown);
 
