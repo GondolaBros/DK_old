@@ -87,13 +87,13 @@ public class Turret : MonoBehaviour, IDamageable
 
                 if(playerObjects.Count > 1)
                 {
-                    ProgressLabel.color = Color.gray;
+                    ProgressLabel.color = Color.yellow;
                     ProgressLabel.text = "Contested!";
                 } 
                 else if(playerObjects.Count > 0)
                 {
                     persuasion += CaptureInterval * Time.deltaTime;  
-                    ProgressLabel.color = Color.yellow;
+                    ProgressLabel.color = Color.green;
                     
                     playerObjects.ForEach(delegate (GameObject obj)
                     {
