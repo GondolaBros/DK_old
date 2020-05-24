@@ -139,14 +139,13 @@ public class Turret : MonoBehaviour, IDamageable
                     if (colliders[i].name != whosCapturingMe.name)
                     {
                         // Unity Vector cookbook shows hwo to truly calculate distance between vectors using a 'heading'
-                        Vector2 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
+                        Vector3 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
                         float distance = heading.magnitude;
-                        Vector2 direction = heading / distance;
-                        
-                        RaycastHit2D rayInfo = Physics2D.Raycast(this.ShootPosition.transform.position, direction, SearchRadius);
-                        if (rayInfo)
+                        Vector3 direction = heading / distance;
+
+                        if (Physics.Raycast(this.ShootPosition.transform.position, direction, out RaycastHit hit, SearchRadius, LayerMask.GetMask("Player", "Terrain")))
                         {
-                            Debug.Log("Hit: " + rayInfo.transform.name);
+                            print("Found an object: " + hit.transform.name + " - distance: " + hit.distance);
                         }
                         break;
                     }

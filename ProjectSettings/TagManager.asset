@@ -15,9 +15,9 @@ TagManager:
   - 
   - 
   - Player
-  - NPC
-  - 
-  - 
+  - Projectile
+  - Terrain
+  - Building
   - 
   - 
   - 
