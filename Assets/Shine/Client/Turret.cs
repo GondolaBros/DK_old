@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 using TMPro;
 
 //Repair kit
@@ -29,6 +28,7 @@ public class Turret : MonoBehaviour, IDamageable
     public Transform CrossbowPivot;
 
     private GameObject whosCapturingMe;
+    private GameObject enemy;
     private const int MAX_PERSUASION = 100;
     private float persuasion = 0f;
     private float captureTimeLeft;
@@ -42,6 +42,8 @@ public class Turret : MonoBehaviour, IDamageable
         ProgressLabel.gameObject.SetActive(false);
 
         whosCapturingMe = null;
+        enemy = null;
+
         captureTimeLeft = MaxCaptureTime;
     }
 
@@ -140,16 +142,17 @@ public class Turret : MonoBehaviour, IDamageable
 
                     for (int i = 0; i < colliders.Length; i++)
                     {
-                        // Only shoot if its the other person who captured me
+                        // Only target the person who didnt capture the turret
                         if (colliders[i].name != whosCapturingMe.name)
                         {
+                            enemy = colliders[i].gameObject;
                             Vector3 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
                             float distance = heading.magnitude;
                             Vector3 direction = heading / distance;
 
                             if (Physics.Raycast(ShootPosition.transform.position, direction, out RaycastHit hit, SearchRadius, LayerMask.GetMask("Player", "Terrain")))
                             {
-                                print("Found an object: " + hit.transform.name + " - distance: " + hit.distance);
+                                //Debug.Log("Found an object: " + hit.transform.name + " - distance: " + hit.distance);
                             }
                             break;
                         }
@@ -158,15 +161,17 @@ public class Turret : MonoBehaviour, IDamageable
                 else
                 {
                     captureTimeLeft = 0;
-                    TurretState = TurretState.Idle;
+                    TurretState = TurretState.Broken;
                     ProgressLabel.gameObject.SetActive(false);
                 }
             } break;
 
             case TurretState.Broken:
             {
-                //REPAIR KITS
-            } break;
+                ProgressLabel.gameObject.SetActive(true);
+                ProgressLabel.text = enemy.name + " must repair the turret";
+            }
+            break;
         }
     }
 }

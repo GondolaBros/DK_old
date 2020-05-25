@@ -13194,8 +13194,8 @@ MonoBehaviour:
   PhysicalDamage: 50
   MagicalDefense: 50
   PhysicalDefense: 50
-  MaxCaptureTime: 5
-  CaptureInterval: 50
+  MaxCaptureTime: 15
+  CaptureInterval: 10
   SearchRadius: 8.5
   EntityType: 0
   TurretState: 0
@@ -16602,7 +16602,7 @@ PrefabInstance:
     - target: {fileID: 8111219522825615870, guid: 8cdd89b8154b3e0458da038489a0eea0,
         type: 3}
       propertyPath: m_Name
-      value: Bishnigga
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 8111219522825615870, guid: 8cdd89b8154b3e0458da038489a0eea0,
         type: 3}
