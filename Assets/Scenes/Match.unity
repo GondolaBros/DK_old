@@ -4129,7 +4129,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163106353}
   m_LocalRotation: {x: 0.0004712232, y: -0.000000526341, z: 0.0011169667, w: 0.99999934}
-  m_LocalPosition: {x: -1.203, y: 0.006, z: 0.006}
+  m_LocalPosition: {x: -1.32, y: 0.02, z: -0.011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1470175689}
@@ -13194,12 +13194,14 @@ MonoBehaviour:
   PhysicalDamage: 50
   MagicalDefense: 50
   PhysicalDefense: 50
-  CaptureInterval: 10
+  MaxCaptureTime: 5
+  CaptureInterval: 50
   SearchRadius: 8.5
   EntityType: 0
   TurretState: 0
   ProgressLabel: {fileID: 532675441}
   ShootPosition: {fileID: 163106354}
+  CrossbowPivot: {fileID: 1470175689}
 --- !u!4 &509884058 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: aba71fd67c8a7d94fa3b4e997e3168c1,
@@ -16601,6 +16603,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Bishnigga
+      objectReference: {fileID: 0}
+    - target: {fileID: 8111219522825615870, guid: 8cdd89b8154b3e0458da038489a0eea0,
+        type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8cdd89b8154b3e0458da038489a0eea0, type: 3}

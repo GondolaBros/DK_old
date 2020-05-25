@@ -18,6 +18,7 @@ public class Turret : MonoBehaviour, IDamageable
     public float MagicalDefense;
     public float PhysicalDefense;
 
+    public float MaxCaptureTime;
     public float CaptureInterval;
     public float SearchRadius;
 
@@ -25,24 +26,23 @@ public class Turret : MonoBehaviour, IDamageable
     public TurretState TurretState;
     public TextMeshPro ProgressLabel;
     public Transform ShootPosition;
+    public Transform CrossbowPivot;
 
     private GameObject whosCapturingMe;
     private const int MAX_PERSUASION = 100;
     private float persuasion = 0f;
+    private float captureTimeLeft;
+
 
     void Awake()
     {
-        CurrentHealth = 100;
-        MaxHealth = 100;
-        PhysicalDefense = 50;
         EntityType = EntityType.Turret;
 
         ProgressLabel = GetComponentInChildren<TextMeshPro>();
         ProgressLabel.gameObject.SetActive(false);
 
         whosCapturingMe = null;
-
-        Debug.Log("Turret");
+        captureTimeLeft = MaxCaptureTime;
     }
 
     public void TakeDamage(Damage damage)
@@ -72,42 +72,41 @@ public class Turret : MonoBehaviour, IDamageable
             case TurretState.Idle:
             {
                 //Has anyone stood in the space long enough to activate this turret?
-                Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius /*layerMask (Player)*/);
-                
-                List<GameObject> playerObjects = new List<GameObject>();
+                Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius, LayerMask.GetMask("Player"));
                 
                 for(int i = 0; i < colliders.Length; i++)
                 {
-                    if (colliders[i].tag == "Player" || colliders[i].tag == "Enemy")
+                    if (colliders[i].CompareTag("Player") || colliders[i].CompareTag("Enemy"))
                     {
-                        playerObjects.Add(colliders[i].gameObject);
                         ProgressLabel.gameObject.SetActive(true);
                     }
                 }
 
-                if(playerObjects.Count > 1)
+                if(colliders.Length > 1)
                 {
                     ProgressLabel.color = Color.yellow;
                     ProgressLabel.text = "Contested!";
                 } 
-                else if(playerObjects.Count > 0)
+                else if(colliders.Length > 0)
                 {
                     persuasion += CaptureInterval * Time.deltaTime;  
                     ProgressLabel.color = Color.green;
-                    
-                    playerObjects.ForEach(delegate (GameObject obj)
+
+                    for (int i = 0; i < colliders.Length; i++)
                     {
-                        if (whosCapturingMe && obj.name != whosCapturingMe.name)
-                        { 
+                        if (whosCapturingMe && colliders[i].name != whosCapturingMe.name)
+                        {
                             persuasion = 0;
                         }
 
-                        whosCapturingMe = obj;
-                        ProgressLabel.text = obj.name + " Capturing (" + (int)persuasion + "%)";
-                    });
-    
+                        whosCapturingMe = colliders[i].gameObject;
+                        ProgressLabel.text = colliders[i].name + " Capturing (" + (int)persuasion + "%)";
+                    }
+                   
                     if(persuasion >= MAX_PERSUASION)
                     {
+                        persuasion = 0;
+                        captureTimeLeft = MaxCaptureTime;
                         TurretState = TurretState.Captured;
                         ProgressLabel.color = Color.cyan;
                         ProgressLabel.text = whosCapturingMe.name + " Captured (HP:100)";
@@ -123,32 +122,44 @@ public class Turret : MonoBehaviour, IDamageable
                     }
                     else if (persuasion > 0)
                     {
-                        ProgressLabel.gameObject.SetActive(false);
                         persuasion = 0;
+                        ProgressLabel.gameObject.SetActive(false);
                     }
                 }
             } break;
-
+            
             case TurretState.Captured:
             {
-                Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius);
+                captureTimeLeft -= Time.deltaTime;
 
-                for (int i = 0; i < colliders.Length; i++)
+                if (captureTimeLeft > 0)
                 {
-                    // Only shoot if its the other person who captured me
-                    if (colliders[i].name != whosCapturingMe.name)
-                    {
-                        // Unity Vector cookbook shows hwo to truly calculate distance between vectors using a 'heading'
-                        Vector3 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
-                        float distance = heading.magnitude;
-                        Vector3 direction = heading / distance;
+                    ProgressLabel.text = whosCapturingMe.name + "'s capture duration: " + (int)captureTimeLeft;
 
-                        if (Physics.Raycast(this.ShootPosition.transform.position, direction, out RaycastHit hit, SearchRadius, LayerMask.GetMask("Player", "Terrain")))
+                    Collider[] colliders = Physics.OverlapSphere(this.transform.position, SearchRadius, LayerMask.GetMask("Player"));
+
+                    for (int i = 0; i < colliders.Length; i++)
+                    {
+                        // Only shoot if its the other person who captured me
+                        if (colliders[i].name != whosCapturingMe.name)
                         {
-                            print("Found an object: " + hit.transform.name + " - distance: " + hit.distance);
+                            Vector3 heading = colliders[i].gameObject.transform.position - ShootPosition.transform.position;
+                            float distance = heading.magnitude;
+                            Vector3 direction = heading / distance;
+
+                            if (Physics.Raycast(ShootPosition.transform.position, direction, out RaycastHit hit, SearchRadius, LayerMask.GetMask("Player", "Terrain")))
+                            {
+                                print("Found an object: " + hit.transform.name + " - distance: " + hit.distance);
+                            }
+                            break;
                         }
-                        break;
                     }
+                }
+                else
+                {
+                    captureTimeLeft = 0;
+                    TurretState = TurretState.Idle;
+                    ProgressLabel.gameObject.SetActive(false);
                 }
             } break;
 
