@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
@@ -36,7 +34,6 @@ public class CameraController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //camera collider logic
         Vector3 newPosition = target.position + cameraOffset;
         newPosition.x = Mathf.Clamp(newPosition.x, 1f, 50f);
         newPosition.z = Mathf.Clamp(newPosition.z, 10f, 30f);
