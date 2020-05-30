@@ -7,8 +7,8 @@ public class CameraController : MonoBehaviour
     private float adjustedDistance = -8f;
 
     private float zoomSmooth = 10f;
-    private float maxZoom = -2f;
-    private float minZoom = -15f;
+    private float maxZoom = -1f;
+    private float minZoom = -4f;
 
     private float orbitXRotation = -20f;
     private float orbitYRotation = -180f;
@@ -26,10 +26,7 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if(target != null)
-        {
-            HandleZoom();
-        }
+        HandleZoom();
     }
 
     private void FixedUpdate()
@@ -42,7 +39,9 @@ public class CameraController : MonoBehaviour
 
     private void HandleZoom()
     {
+        float cameraDistance = this.cameraOffset.x;
         cameraDistance += Input.GetAxis("Mouse ScrollWheel") * zoomSmooth;
         cameraDistance = Mathf.Clamp(cameraDistance, minZoom, maxZoom);
+        this.cameraOffset.x = cameraDistance;
     }
 }

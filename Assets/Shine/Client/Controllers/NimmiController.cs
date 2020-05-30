@@ -11,26 +11,30 @@ public class NimmiController : MonoBehaviour
     private float accelerateSpeed = 5f;
     private float worldRotationAngle = 0.0f;
 
+    private bool isGrounded = false;
+
     private Animator anim;
 
     private Vector2 movementInput;
 
     private void Awake()
     {
-        anim = GetComponentInChildren<Animator>();
+        anim = GetComponent<Animator>();
+        movementInput = new Vector2();
     }
 
     private void Update()
     {
-        movementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        movementInput.x = movementInput.x > 0 ? 1 : movementInput.x < 0 ? -1 : 0;
-        movementInput.y = movementInput.y > 0 ? 1 : movementInput.y < 0 ? -1 : 0;
+        float movementX = Input.GetAxisRaw("Horizontal"), movementY = Input.GetAxisRaw("Vertical");
+        movementInput.x = movementX > 0 ? 1 : movementX < 0 ? -1 : 0;
+        movementInput.y = movementY > 0 ? 1 : movementY < 0 ? -1 : 0;
     }
 
     private void FixedUpdate()
     {
         HandleRotation();
         HandleMovement();
+        HandleJumping();
     }
 
     private void HandleRotation()
@@ -79,12 +83,45 @@ public class NimmiController : MonoBehaviour
 
     private void HandleMovement()
     {
-        float movementValue = Mathf.Lerp(
-            anim.GetFloat("MovementAxis"), 
-            Mathf.Abs(movementInput.magnitude), 
-            accelerateSpeed * Time.deltaTime
-        ); //SmoothDamp?
+        float movementValue = 0f;
+        if(Mathf.Abs(movementInput.magnitude - anim.GetFloat("MovementAxis")) > 0.1f)
+        {
+            movementValue = Mathf.Lerp(
+                anim.GetFloat("MovementAxis"), 
+                Mathf.Abs(movementInput.magnitude), 
+                accelerateSpeed * Time.deltaTime
+            ); //SmoothDamp?
+        }
+        else
+        {
+            movementValue = Mathf.Abs(movementInput.magnitude);
+        }
 
+        Debug.Log("Movement Value:" + movementValue);
         anim.SetFloat("MovementAxis", movementValue);
+    }
+
+    private void HandleJumping()
+    {
+        if(Physics.Raycast(transform.position, Vector3.down, 2f))
+        {
+            isGrounded = true;
+            Debug.Log("IsGrounded");
+        } 
+        else
+        {
+            isGrounded = false;
+        }
+
+        if(isGrounded && Input.GetButtonDown("Jump"))
+        {
+            Debug.Log("Jump");
+            anim.SetTrigger("Jump");
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.down * 2f));
     }
 }
