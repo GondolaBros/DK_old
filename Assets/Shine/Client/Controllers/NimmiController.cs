@@ -23,6 +23,8 @@ public class NimmiController : MonoBehaviour
     private void Update()
     {
         movementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        movementInput.x = movementInput.x > 0 ? 1 : movementInput.x < 0 ? -1 : 0;
+        movementInput.y = movementInput.y > 0 ? 1 : movementInput.y < 0 ? -1 : 0;
     }
 
     private void FixedUpdate()
@@ -35,6 +37,17 @@ public class NimmiController : MonoBehaviour
     {
         float horizontalAngle = movementInput.x == 1 ? 90 : movementInput.x == -1 ? 270 : 0;
         float verticalAngle = movementInput.y == -1 ? 180 : movementInput.y == 1 && movementInput.x < 0 ? 360 : 0;
+
+        // float horizontalAngle = movementInput.x > 0 ? 90 : movementInput.x < 0 ? 270 : 0;
+        // float verticalAngle = movementInput.y < -1 ? 180 : movementInput.y > 0 && movementInput.x < 0 ? 360 : 0;
+
+
+
+        Debug.Log("Horizontal Axis = " + movementInput.x);
+        Debug.Log("Vertical Axis = " + movementInput.y);
+        Debug.Log("Horizontal Angle = " + horizontalAngle);
+        Debug.Log("Vertical Angle = " + verticalAngle);
+
 
         if (movementInput.x != 0 && movementInput.y != 0)
         {
