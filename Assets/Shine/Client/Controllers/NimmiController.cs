@@ -11,15 +11,19 @@ public class NimmiController : MonoBehaviour
     private float accelerateSpeed = 5f;
     private float worldRotationAngle = 0.0f;
 
+    private Quaternion targetRotation;
     private bool isGrounded = false;
 
     private Animator anim;
 
     private Vector2 movementInput;
 
+    private new Rigidbody rigidbody;
+
     private void Awake()
     {
         anim = GetComponent<Animator>();
+        rigidbody = GetComponent<Rigidbody>();
         movementInput = new Vector2();
     }
 
@@ -32,6 +36,7 @@ public class NimmiController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        SetPhysicsConstraints();
         HandleRotation();
         HandleMovement();
         HandleJumping();
@@ -77,28 +82,50 @@ public class NimmiController : MonoBehaviour
             worldRotationAngle = verticalAngle;
         }
 
-        Quaternion targetRotation = Quaternion.AngleAxis(worldRotationAngle + GLOBAL_OFFSET, Vector3.up);
+        targetRotation = Quaternion.AngleAxis(worldRotationAngle + GLOBAL_OFFSET, Vector3.up);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime); //SmoothDamp?
+
+        // Debug.Log("Transform.rotation=" + transform.rotation.eulerAngles.y);
+        // Debug.Log("TargetRotation=" + targetRotation.eulerAngles.y);
+        // Debug.Log("Return:" + (Mathf.Abs(transform.rotation.eulerAngles.y - targetRotation.eulerAngles.y) < 10f));
+        Vector3 clampedRotation = transform.rotation.eulerAngles;
+        clampedRotation.y = clampedRotation.y + Mathf.Ceil(-clampedRotation.y / 360f) * 360f;
+        transform.rotation = Quaternion.Euler(clampedRotation);
+    }
+
+    private void SetPhysicsConstraints()
+    {
+        if(Mathf.Abs(transform.rotation.eulerAngles.y - targetRotation.eulerAngles.y) < FORTY_FIVE)
+        {
+            rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+        else
+        {
+            rigidbody.constraints = RigidbodyConstraints.FreezeRotation 
+                | RigidbodyConstraints.FreezePositionX
+                | RigidbodyConstraints.FreezePositionZ;   
+        }       
     }
 
     private void HandleMovement()
     {
         float movementValue = 0f;
-        if(Mathf.Abs(movementInput.magnitude - anim.GetFloat("MovementAxis")) > 0.1f)
+        if(Mathf.Abs(movementInput.magnitude - anim.GetFloat("MovementAxis")) > 0.01f)
         {
             movementValue = Mathf.Lerp(
                 anim.GetFloat("MovementAxis"), 
                 Mathf.Abs(movementInput.magnitude), 
                 accelerateSpeed * Time.deltaTime
-            ); //SmoothDamp?
+            );
         }
         else
         {
             movementValue = Mathf.Abs(movementInput.magnitude);
         }
 
-        Debug.Log("Movement Value:" + movementValue);
         anim.SetFloat("MovementAxis", movementValue);
+
+ 
     }
 
     private void HandleJumping()
