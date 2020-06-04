@@ -32,6 +32,8 @@ public class NimmiController : MonoBehaviour
         float movementX = Input.GetAxisRaw("Horizontal"), movementY = Input.GetAxisRaw("Vertical");
         movementInput.x = movementX > 0 ? 1 : movementX < 0 ? -1 : 0;
         movementInput.y = movementY > 0 ? 1 : movementY < 0 ? -1 : 0;
+
+ 
     }
 
     private void FixedUpdate()
@@ -42,21 +44,22 @@ public class NimmiController : MonoBehaviour
         HandleJumping();
     }
 
+    private void LateUpdate()
+    {
+        float currentRotation = transform.rotation.eulerAngles.y;
+        // currentRotation.y = currentRotation.y + Mathf.Ceil(-currentRotation.y / 360f) * 360f;
+        // transform.rotation = Quaternion.Euler(currentRotation);
+        if(currentRotation == 360)
+        {
+            currentRotation = 0;
+            transform.rotation = Quaternion.AngleAxis(currentRotation, Vector3.up);//Quaternion.Euler(currentRotation);
+        }
+    }
+
     private void HandleRotation()
     {
         float horizontalAngle = movementInput.x == 1 ? 90 : movementInput.x == -1 ? 270 : 0;
         float verticalAngle = movementInput.y == -1 ? 180 : movementInput.y == 1 && movementInput.x < 0 ? 360 : 0;
-
-        // float horizontalAngle = movementInput.x > 0 ? 90 : movementInput.x < 0 ? 270 : 0;
-        // float verticalAngle = movementInput.y < -1 ? 180 : movementInput.y > 0 && movementInput.x < 0 ? 360 : 0;
-
-
-
-        Debug.Log("Horizontal Axis = " + movementInput.x);
-        Debug.Log("Vertical Axis = " + movementInput.y);
-        Debug.Log("Horizontal Angle = " + horizontalAngle);
-        Debug.Log("Vertical Angle = " + verticalAngle);
-
 
         if (movementInput.x != 0 && movementInput.y != 0)
         {
@@ -82,20 +85,19 @@ public class NimmiController : MonoBehaviour
             worldRotationAngle = verticalAngle;
         }
 
-        targetRotation = Quaternion.AngleAxis(worldRotationAngle + GLOBAL_OFFSET, Vector3.up);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime); //SmoothDamp?
-
-        // Debug.Log("Transform.rotation=" + transform.rotation.eulerAngles.y);
-        // Debug.Log("TargetRotation=" + targetRotation.eulerAngles.y);
-        // Debug.Log("Return:" + (Mathf.Abs(transform.rotation.eulerAngles.y - targetRotation.eulerAngles.y) < 10f));
-        Vector3 clampedRotation = transform.rotation.eulerAngles;
-        clampedRotation.y = clampedRotation.y + Mathf.Ceil(-clampedRotation.y / 360f) * 360f;
-        transform.rotation = Quaternion.Euler(clampedRotation);
+        float adjustedAngle = worldRotationAngle;// + GLOBAL_OFFSET;
+        targetRotation = Quaternion.AngleAxis(adjustedAngle, Vector3.up);
+        //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
     }
 
     private void SetPhysicsConstraints()
     {
-        if(Mathf.Abs(transform.rotation.eulerAngles.y - targetRotation.eulerAngles.y) < FORTY_FIVE)
+        Debug.Log("TargetRotation Y " + targetRotation.eulerAngles.y);
+        Debug.Log("CurrentRotation Y " + transform.rotation.eulerAngles.y);
+
+        Debug.Log("Vector Difference: " + Mathf.Abs(targetRotation.eulerAngles.y - transform.rotation.eulerAngles.y));
+        if(Mathf.Abs(targetRotation.eulerAngles.y - transform.rotation.eulerAngles.y) < FORTY_FIVE)
         {
             rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
         }
@@ -133,7 +135,7 @@ public class NimmiController : MonoBehaviour
         if(Physics.Raycast(transform.position, Vector3.down, 2f))
         {
             isGrounded = true;
-            Debug.Log("IsGrounded");
+            //Debug.Log("IsGrounded");
         } 
         else
         {

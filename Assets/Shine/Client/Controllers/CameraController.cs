@@ -4,13 +4,13 @@ public class CameraController : MonoBehaviour
 {
     private float cameraDistance = 6f;
     private float adjustedDistance = 6f;
-    private float cameraZRotation = -65f;
+    private float cameraZRotation = 65f;
     
     Vector3 destination = Vector3.zero;
     Vector3 adjustedDestination = Vector3.zero;
 
     private Vector3 cameraVelocity = Vector3.zero;
-    private float cameraSmooth = 0.1f;
+    private float cameraSmooth = .5f;
 
     private float zoomSmooth = 20f;
     private float maxZoom = 6f;
@@ -20,11 +20,15 @@ public class CameraController : MonoBehaviour
     
     CameraCollider cameraCollider = new CameraCollider();
 
+    public bool flag = true;
+
 
     private void Awake()
     {
-        this.target = GameObject.FindGameObjectWithTag("Player").transform.Find("CameraTarget");
-        this.cameraCollider.Initialize(Camera.main);
+        target = GameObject.FindGameObjectWithTag("Player").transform.Find("CameraTarget");
+        cameraCollider.Initialize(Camera.main);
+        cameraCollider.UpdateCameraClipPoints(transform.position, transform.rotation, ref cameraCollider.AdjustedCameraClipPoints);
+        cameraCollider.UpdateCameraClipPoints(destination, transform.rotation, ref cameraCollider.DesiredCameraClipPoints);
     }
 
     private void Update()
@@ -35,19 +39,26 @@ public class CameraController : MonoBehaviour
     private void FixedUpdate()
     {
         FollowTarget();
-        FocusOnTarget();
         HandleCameraCollisions();
     }
 
     private void FollowTarget()
     {
-        destination = Quaternion.Euler(0, 0, cameraZRotation) * Vector3.left * cameraDistance;
-        destination += target.position;// + (Vector3.right * Input.GetAxisRaw("Vertical") * 0.5f);
+        destination = Quaternion.Euler(cameraZRotation, 0, 0) * Vector3.back * cameraDistance;
 
+        if(flag)
+        {
+            destination += target.position - (Vector3.back * Input.GetAxisRaw("Vertical") * 1.5f);
+        }
+        else
+        {
+            destination += target.position;
+        }
+        
         Vector3 correctedDestination = destination;
         if (cameraCollider.Colliding)
         {
-            adjustedDestination = Quaternion.Euler(0, 0, cameraZRotation) * Vector3.left * adjustedDistance;
+            adjustedDestination = Quaternion.Euler(cameraZRotation, 0, 0) * Vector3.back * adjustedDistance;
             adjustedDestination += target.position;
             correctedDestination = adjustedDestination;
         }
@@ -55,12 +66,7 @@ public class CameraController : MonoBehaviour
         correctedDestination.x = Mathf.Clamp(correctedDestination.x, 1f, 50f);
         correctedDestination.z = Mathf.Clamp(correctedDestination.z, 10f, 30f);
         transform.position = Vector3.SmoothDamp(transform.position, correctedDestination, ref cameraVelocity, cameraSmooth);
-    }
-
-    private void FocusOnTarget()
-    {
-        Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cameraSmooth * Time.deltaTime);
+        //transform.position = Vector3.Lerp(transform.position, correctedDestination, cameraSmooth * Time.deltaTime);
     }
 
     private void HandleCameraCollisions()
@@ -69,6 +75,7 @@ public class CameraController : MonoBehaviour
         cameraCollider.UpdateCameraClipPoints(destination, transform.rotation, ref cameraCollider.DesiredCameraClipPoints);
         cameraCollider.CheckColliding(target.position);
         adjustedDistance = cameraCollider.GetAdjustedDistanceWithRayFrom(target.position);    
+        Debug.Log("Adjusted Distance" + adjustedDistance);
     }
 
     private void HandleZoom()
