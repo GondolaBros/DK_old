@@ -63,8 +63,14 @@ public class CameraController : MonoBehaviour
             correctedDestination = adjustedDestination;
         }
 
-        correctedDestination.x = Mathf.Clamp(correctedDestination.x, 1f, 50f);
-        correctedDestination.z = Mathf.Clamp(correctedDestination.z, 10f, 30f);
+        //Get screen edges
+        //Screen coordinates to world-point
+        //If world point collides with terrain 
+        correctedDestination.x = Mathf.Clamp(correctedDestination.x, 10f, 50f);
+        correctedDestination.z = Mathf.Clamp(correctedDestination.z, 1f, 100f);
+
+
+
         transform.position = Vector3.SmoothDamp(transform.position, correctedDestination, ref cameraVelocity, cameraSmooth);
         //transform.position = Vector3.Lerp(transform.position, correctedDestination, cameraSmooth * Time.deltaTime);
     }

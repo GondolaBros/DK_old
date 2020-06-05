@@ -2,8 +2,8 @@
 
 public class NimmiController : MonoBehaviour
 {
+    private const float TWENTY = 20f;
     private const float FORTY_FIVE = 45f;
-    private const float GLOBAL_OFFSET = 90f;
 
     [SerializeField]
     private float rotateSpeed = 5f;
@@ -58,8 +58,8 @@ public class NimmiController : MonoBehaviour
 
     private void HandleRotation()
     {
-        float horizontalAngle = movementInput.x == 1 ? 90 : movementInput.x == -1 ? 270 : 0;
-        float verticalAngle = movementInput.y == -1 ? 180 : movementInput.y == 1 && movementInput.x < 0 ? 360 : 0;
+        float horizontalAngle = movementInput.x == 1 ? 90f : movementInput.x == -1 ? 270f : 0;
+        float verticalAngle = movementInput.y == -1 ? 180f : movementInput.y == 1 && movementInput.x < 0 ? 360f : 0;
 
         if (movementInput.x != 0 && movementInput.y != 0)
         {
@@ -85,8 +85,7 @@ public class NimmiController : MonoBehaviour
             worldRotationAngle = verticalAngle;
         }
 
-        float adjustedAngle = worldRotationAngle;// + GLOBAL_OFFSET;
-        targetRotation = Quaternion.AngleAxis(adjustedAngle, Vector3.up);
+        targetRotation = Quaternion.AngleAxis(worldRotationAngle, Vector3.up);
         //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
     }
@@ -97,7 +96,8 @@ public class NimmiController : MonoBehaviour
         Debug.Log("CurrentRotation Y " + transform.rotation.eulerAngles.y);
 
         Debug.Log("Vector Difference: " + Mathf.Abs(targetRotation.eulerAngles.y - transform.rotation.eulerAngles.y));
-        if(Mathf.Abs(targetRotation.eulerAngles.y - transform.rotation.eulerAngles.y) < FORTY_FIVE)
+        float rotationDifference = Mathf.Abs(targetRotation.eulerAngles.y - transform.rotation.eulerAngles.y);
+        if(rotationDifference < 45f || rotationDifference > 315f)
         {
             rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
         }
