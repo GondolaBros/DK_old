@@ -2,19 +2,20 @@
 
 public class CameraController : MonoBehaviour
 {
-    private float cameraDistance = 6f;
-    private float adjustedDistance = 6f;
+    [SerializeField]
+    private float cameraDistance = 5f;
+    private float adjustedDistance = 5f;
     private float cameraZRotation = 65f;
     
     Vector3 destination = Vector3.zero;
     Vector3 adjustedDestination = Vector3.zero;
 
     private Vector3 cameraVelocity = Vector3.zero;
-    private float cameraSmooth = .5f;
+    private float cameraSmooth = .3f;
 
     private float zoomSmooth = 20f;
-    private float maxZoom = 6f;
-    private float minZoom = 2f;
+    private float maxZoom = 5f;
+    private float minZoom = 1.5f;
 
     private Transform target;
     
