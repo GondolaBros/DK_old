@@ -1,201 +1,185 @@
 ﻿using UnityEngine;
 using Amazon.GameLift;
 using Amazon.GameLift.Model;
-using Aws.GameLift.Realtime;
-using Aws.GameLift.Realtime.Event;
-using Aws.GameLift.Realtime.Types;
 using System;
-using System.Text;
-using Amazon.GameLift.Model.Internal.MarshallTransformations;
-using UnityEditor;
-using Amazon.Runtime;
-using Aws.GameLift.Realtime.Network;
-using Amazon;
+using System.Collections;
+using LiteNetLib;
+using System.Collections.Generic;
 
 public class NetworkManager : MonoBehaviour
 {
-    public Client RealtimeClient { get; private set; }
     public AmazonGameLiftClient GameLiftClient { get; private set; }
-    public CreateGameSessionRequest GameSessionRequest { get; private set; }
-    public CreatePlayerSessionRequest PlayerSessionRequest { get; private set; }
-    public bool OnCloseReceived { get; private set; }
+    public EventBasedNetListener RealtimeListener { get; private set; }
+    public NetManager RealtimeClient { get; private set; }
+    public NetPeer OurPeer{ get; private set;}
+    public string ServerIP { get; private set; }
+    public string TestServerIP { get; private set; }
+    public int RealtimeUdpPort { get; private set; }
     public string Username { get; private set; }
-    
+    public string PlayerSessionId { get; private set; }
+
     public bool debug;
+    string placementId;
+    string testFleetId = "fleet-1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+    string fleetId = "fleet-1dffcfc7-caa2-44d3-9d14-e8061272042c";
+    string gameSessionQueueName = "";
 
     // An opcode defined by client and your server script that represents a custom message type
     private const int MY_TEST_OP_CODE = 0x0;
- 
+
+    public int MaxConcurrentProcesses;
+
+    public Dictionary<int, int> TcpToUdpMap;
+
     void Start()
     {
-        this.OnCloseReceived = false;
+        this.placementId = null;
+        this.PlayerSessionId = null;
         this.Username = "aoinoikaz";
+        this.RealtimeUdpPort = 0;
+        this.ServerIP = null;
+        this.TestServerIP = "127.0.0.1";
+        this.OurPeer = null;
+        this.TcpToUdpMap = new Dictionary<int, int>(MaxConcurrentProcesses);
 
-        ClientLogger.LogHandler = (x) => Debug.Log(x);
-
-        AmazonGameLiftConfig config = new AmazonGameLiftConfig();
-        GameLiftClient = new AmazonGameLiftClient();
+        for (int i = 0; i < MaxConcurrentProcesses; i++)
+        {
+            TcpToUdpMap.Add(9080 + i, 3456 + i);
+        }
 
         if (debug)
         {
-            GameSessionRequest = new CreateGameSessionRequest();
-            GameSessionRequest.FleetId = "fleet-293cc1d7-3487-4a90-b285-1bbc3b966da0";
-            GameSessionRequest.Name = Guid.NewGuid().ToString();
-            GameSessionRequest.MaximumPlayerSessionCount = 2;
-
-            var createGameSessionResponse = GameLiftClient.CreateGameSession(GameSessionRequest);
-            if (createGameSessionResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
-            {
-                Debug.Log("Created game session: " + createGameSessionResponse.ToString());
-
-                /*
-                ConnectionStatus playerConnectionStatus = Connect(
-                   // DNS name used instead of ip because we're using TLS encryption
-                   createGameSessionResponse.GameSession.DnsName,
-                   // TCP port for gamelift interactions
-                   createGameSessionResponse.GameSession.Port,
-                   // UDP port for real time data
-                   3456,
-                   // Server-generated-identifier used to validate the player
-                   createGameSessionResponse.PlayerSession.PlayerSessionId,
-                   // Extra data for the connection payload
-                   StringToBytes("TestConnectionPayload"));*/
-            }
-
+            AmazonGameLiftConfig gameliftConfig = new AmazonGameLiftConfig();
+            gameliftConfig.ServiceURL = "http://127.0.0.1:9080";
+            GameLiftClient = new AmazonGameLiftClient(gameliftConfig);
         }
         else
         {
-            string playerId = this.Username + Guid.NewGuid().ToString();
-            DesiredPlayerSession session = new DesiredPlayerSession();
-            session.PlayerId = playerId;
-            session.PlayerData = "PlayerCombatLevel:5|Champion:Nimmi";
+            GameLiftClient = new AmazonGameLiftClient();
+        }
 
-            PlayerLatency playerLatency = new PlayerLatency();
-            playerLatency.PlayerId = playerId;
-            playerLatency.LatencyInMilliseconds = 15f;
+        this.RealtimeListener = new EventBasedNetListener();
+        this.RealtimeListener.NetworkReceiveEvent += RealtimeListener_NetworkReceiveEvent;
+        this.RealtimeListener.PeerConnectedEvent += RealtimeListener_PeerConnectedEvent;
+        this.RealtimeListener.PeerDisconnectedEvent += RealtimeListener_PeerDisconnectedEvent;
+        this.RealtimeClient = new NetManager(this.RealtimeListener);
 
-            var startGameSessionPlacementRequest = new StartGameSessionPlacementRequest();
-            startGameSessionPlacementRequest.GameSessionName = Guid.NewGuid().ToString();
-            startGameSessionPlacementRequest.PlacementId = Guid.NewGuid().ToString();
-            startGameSessionPlacementRequest.MaximumPlayerSessionCount = 2;
-            startGameSessionPlacementRequest.GameSessionQueueName = "arn:aws:gamelift:ca-central-1:561339566466:gamesessionqueue/DKQueue";
-            startGameSessionPlacementRequest.DesiredPlayerSessions.Add(session);
+        if (!this.RealtimeClient.Start())
+        {
+            Debug.Log("Error trying to start client listener on port: " + this.RealtimeUdpPort);
+        }
+    }
+
+
+    private void Update()
+    {
+        if (this.RealtimeClient != null && this.OurPeer != null)
+        {
+            this.RealtimeClient.PollEvents();
+        }
+    }
+
+
+    public async void FindMatch()
+    {
+        CreateGameSessionRequest cgsr = new CreateGameSessionRequest();
+        cgsr.FleetId = debug ? testFleetId : fleetId;
+        cgsr.Name = Guid.NewGuid().ToString();
+        cgsr.MaximumPlayerSessionCount = 2;
+
+        Debug.Log("Creating game session async... awaiting response...");
+        CreateGameSessionResponse cgsR =  await GameLiftClient.CreateGameSessionAsync(cgsr);
+        //CreateGameSessionResponse cgsR = GameLiftClient.CreateGameSession(cgsr);
+
+        if (cgsR.GameSession != null)
+        {
+            Debug.Log("Created game session: " + cgsR.GameSession.CreationTime + " | " + cgsR.GameSession.GameSessionId);
+
+            // we need to assign this client the returned ip/port to connect to
+            this.ServerIP = cgsR.GameSession.IpAddress;
+                
+            // Our server runtime configurations will always have a tcp and udp port matching.
+            _ = this.TcpToUdpMap.TryGetValue(cgsR.GameSession.Port, out int udp);
+            this.RealtimeUdpPort = udp;
             
-            //TODO: adding the player latencies causes the server to fail to activate game session ! 
-            //startGameSessionPlacementRequest.PlayerLatencies.Add(playerLatency);
+            Debug.Log(this.ServerIP + " | " + cgsR.GameSession.Port + " | " + this.RealtimeUdpPort);
 
-            var startGameSessionPlacementResponse = GameLiftClient.StartGameSessionPlacement(startGameSessionPlacementRequest);
-            if (startGameSessionPlacementResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            CreatePlayerSessionRequest cpsr = new CreatePlayerSessionRequest();
+            cpsr.GameSessionId = cgsR.GameSession.GameSessionId;
+            cpsr.PlayerId = Guid.NewGuid().ToString();
+            cpsr.PlayerData = "PlayerCombatLevel:5|Champion:Nimmi";
+
+            Debug.Log("Creating player session async... awaiting response...");
+            CreatePlayerSessionResponse cpsR = await GameLiftClient.CreatePlayerSessionAsync(cpsr);
+            //CreatePlayerSessionResponse cpsR = GameLiftClient.CreatePlayerSession(cpsr);
+
+            if (cpsR.PlayerSession != null)
             {
-                Debug.Log("GameSessionPlacement failed");
-            }
-            else
-            {
-                Debug.Log("SGS State: " + startGameSessionPlacementResponse.GameSessionPlacement.Status.ToString());
-                Debug.Log("StartGameSessionPlacementResponse: " + startGameSessionPlacementResponse.HttpStatusCode);
-                Debug.Log("SGS: " + startGameSessionPlacementResponse.GameSessionPlacement.GameSessionQueueName);
-                Debug.Log("SGS: " + startGameSessionPlacementResponse.GameSessionPlacement.GameSessionName);
+                Debug.Log("Created player session: " + cpsR.PlayerSession.CreationTime + " | " + cpsR.PlayerSession.PlayerSessionId);
+                this.PlayerSessionId = cpsR.PlayerSession.PlayerSessionId;
+                StartCoroutine(Connect());
             }
         }
     }
 
 
-    // Connect to realtime gameserver
-    ConnectionStatus Connect(string endpoint, int tcpPort, int localUdpPort, string playerSessionId, byte[] connectionPayload)
+    public IEnumerator Connect()
     {
-        ConnectionToken token = new ConnectionToken(playerSessionId, connectionPayload);
-        return RealtimeClient.Connect(endpoint, tcpPort, localUdpPort, token);
+        Debug.Log("Attempting to connect to server");
+
+        yield return new WaitForSeconds(1.5f);
+
+        try
+        {
+            OurPeer = this.RealtimeClient.Connect(debug ? this.TestServerIP : this.ServerIP, this.RealtimeUdpPort, this.PlayerSessionId);
+            Debug.Log(OurPeer.ToString());
+            Debug.Log(OurPeer.ConnectionState.ToString());
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Caught exception when trying to connect: " + e.ToString());
+        }
     }
 
 
     public void Disconnect()
     {
-        if (RealtimeClient != null && RealtimeClient.Connected)
+        if (RealtimeClient != null && this.IsConnected())
         {
-            RealtimeClient.Disconnect();
+            RealtimeClient.Stop();
         }
     }
 
 
     public bool IsConnected()
     {
-        return RealtimeClient.Connected;
+        return this.OurPeer != null && this.OurPeer.ConnectionState == ConnectionState.Connected;
+    }
+
+
+    private void RealtimeListener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
+    {
+        Debug.Log("PeerDisconnectedEvent: " + disconnectInfo.Reason.ToString());
+    }
+
+
+    private void RealtimeListener_PeerConnectedEvent(NetPeer peer)
+    {
+        Debug.Log("Successfully connected to remote server: " + peer.EndPoint.ToString());
+        Giggity.Instance.FindMatch.gameObject.SetActive(false);
+        Giggity.Instance.ConnectionState.text = "Connected to game server";
+    }
+
+
+    private void RealtimeListener_NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
+    {
+        Debug.LogFormat("RealtimeListener_NetworkReceiveEvent: {0}", reader.GetString(100 /* max length of string */));
+        reader.Recycle();
     }
 
 
     private void OnApplicationQuit()
     {
         this.Disconnect();
-        
     }
-
-
-    /// <summary>
-    /// Example of sending to a custom message to the server.
-    /// 
-    /// Server could be replaced by known peer Id etc.
-    /// </summary>
-    /// <param name="intent">Choice of delivery intent ie Reliable, Fast etc. </param>
-    /// <param name="payload">Custom payload to send with message</param>
-    public void SendMessage(DeliveryIntent intent, string payload)
-    {
-        RealtimeClient.SendMessage(RealtimeClient.NewMessage(MY_TEST_OP_CODE)
-            .WithDeliveryIntent(intent)
-            .WithTargetPlayer(Constants.PLAYER_ID_SERVER)
-            .WithPayload(StringToBytes(payload)));
-    }
-
-    /**
-     * Handle connection open events
-     */
-    public void OnOpenEvent(object sender, EventArgs e)
-    {
-    }
-
-    /**
-     * Handle connection close events
-     */
-    public void OnCloseEvent(object sender, EventArgs e)
-    {
-        OnCloseReceived = true;
-    }
-
-    /**
-     * Handle Group membership update events 
-     */
-    public void OnGroupMembershipUpdate(object sender, GroupMembershipEventArgs e)
-    {
-    }
-
-    /**
-     *  Handle data received from the Realtime server 
-     */
-    public virtual void OnDataReceived(object sender, DataReceivedEventArgs e)
-    {
-        switch (e.OpCode)
-        {
-            // handle message based on OpCode
-            default:
-                break;
-
-        }
-    }
-
-    /**
-     * Helper method to simplify task of sending/receiving payloads.
-     */
-    public static byte[] StringToBytes(string str)
-    {
-        return Encoding.UTF8.GetBytes(str);
-    }
-
-    /**
-     * Helper method to simplify task of sending/receiving payloads.
-     */
-    public static string BytesToString(byte[] bytes)
-    {
-        return Encoding.UTF8.GetString(bytes);
-    }
-    // Start is called before the first frame update
-
 }
