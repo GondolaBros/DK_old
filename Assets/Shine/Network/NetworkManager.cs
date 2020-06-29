@@ -12,6 +12,7 @@ public class NetworkManager : MonoBehaviour
     public EventBasedNetListener RealtimeListener { get; private set; }
     public NetManager RealtimeClient { get; private set; }
     public NetPeer OurPeer{ get; private set;}
+    public Dictionary<int, int> TcpToUdpMap { get; private set; }
     public string ServerIP { get; private set; }
     public string TestServerIP { get; private set; }
     public int RealtimeUdpPort { get; private set; }
@@ -19,26 +20,17 @@ public class NetworkManager : MonoBehaviour
     public string PlayerSessionId { get; private set; }
 
     public bool debug;
-    string placementId;
-    string testFleetId = "fleet-1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
-    string fleetId = "fleet-1dffcfc7-caa2-44d3-9d14-e8061272042c";
-    string gameSessionQueueName = "";
-
-    // An opcode defined by client and your server script that represents a custom message type
-    private const int MY_TEST_OP_CODE = 0x0;
-
-    public int MaxConcurrentProcesses;
-
-    public Dictionary<int, int> TcpToUdpMap;
+    private int MaxConcurrentProcesses = 30;
+    private string testFleetId = "fleet-1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+    private string fleetId = "fleet-ea2093a2-2f40-4385-9e0f-2fbaeb2dc5c1";
 
     void Start()
     {
-        this.placementId = null;
         this.PlayerSessionId = null;
-        this.Username = "aoinoikaz";
-        this.RealtimeUdpPort = 0;
         this.ServerIP = null;
         this.TestServerIP = "127.0.0.1";
+        this.Username = "aoinoikaz";
+        this.RealtimeUdpPort = 0;
         this.OurPeer = null;
         this.TcpToUdpMap = new Dictionary<int, int>(MaxConcurrentProcesses);
 
@@ -82,10 +74,12 @@ public class NetworkManager : MonoBehaviour
 
     public async void FindMatch()
     {
+        Giggity.Instance.FindMatch.gameObject.SetActive(false);
         CreateGameSessionRequest cgsr = new CreateGameSessionRequest();
         cgsr.FleetId = debug ? testFleetId : fleetId;
         cgsr.Name = Guid.NewGuid().ToString();
         cgsr.MaximumPlayerSessionCount = 2;
+        Debug.Log(fleetId);
 
         Debug.Log("Creating game session async... awaiting response...");
         CreateGameSessionResponse cgsR =  await GameLiftClient.CreateGameSessionAsync(cgsr);
@@ -97,7 +91,7 @@ public class NetworkManager : MonoBehaviour
 
             // we need to assign this client the returned ip/port to connect to
             this.ServerIP = cgsR.GameSession.IpAddress;
-                
+            
             // Our server runtime configurations will always have a tcp and udp port matching.
             _ = this.TcpToUdpMap.TryGetValue(cgsR.GameSession.Port, out int udp);
             this.RealtimeUdpPort = udp;
@@ -118,6 +112,10 @@ public class NetworkManager : MonoBehaviour
                 Debug.Log("Created player session: " + cpsR.PlayerSession.CreationTime + " | " + cpsR.PlayerSession.PlayerSessionId);
                 this.PlayerSessionId = cpsR.PlayerSession.PlayerSessionId;
                 StartCoroutine(Connect());
+            }
+            else
+            {
+                Giggity.Instance.FindMatch.gameObject.SetActive(true);
             }
         }
     }
@@ -160,6 +158,7 @@ public class NetworkManager : MonoBehaviour
     private void RealtimeListener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
     {
         Debug.Log("PeerDisconnectedEvent: " + disconnectInfo.Reason.ToString());
+        Giggity.Instance.FindMatch.gameObject.SetActive(true);
     }
 
 
